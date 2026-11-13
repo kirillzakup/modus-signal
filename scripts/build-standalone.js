@@ -22,3 +22,8 @@ console.log('dist/modus-signal.html', (out.length / 1024).toFixed(0) + ' KB');
 fs.mkdirSync(path.join(root,'dist/pages'),{recursive:true});
 fs.writeFileSync(path.join(root,'dist/pages/index.html'),out.replace('<head>', '<head><script>window.MODUS_STATIC_DEMO=true;</script>'));
 fs.copyFileSync(path.join(root,'public/telegram-avatar.png'),path.join(root,'dist/pages/telegram-avatar.png'));
+const tutorialFiles=['index.html','modus-signal-guide.mp4','poster.jpg','captions.vtt','chapters.json'];
+if(tutorialFiles.every(file=>fs.existsSync(path.join(root,'docs/tutorial',file)))){
+  fs.mkdirSync(path.join(root,'dist/pages/tutorial'),{recursive:true});
+  for(const file of tutorialFiles)fs.copyFileSync(path.join(root,'docs/tutorial',file),path.join(root,'dist/pages/tutorial',file));
+}

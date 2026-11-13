@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Обновлённая видеоинструкция МОДУС · СИГНАЛ: регистрация, командные решения, ИИ-помощник, монеты и награды.">
+  <title>Как пользоваться МОДУС · СИГНАЛ — видеоинструкция</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#102e46;background:#eef3f7;line-height:1.6}
+    *{box-sizing:border-box}body{margin:0}main{max-width:1180px;margin:auto;padding:32px 20px 64px}
+    header{margin-bottom:24px}.brand{font-weight:800;letter-spacing:.1em;color:#c5111d;font-size:13px}
+    h1{font-size:clamp(25px,4vw,42px);line-height:1.2;margin:12px 0}p{max-width:850px;color:#486176}
+    video{display:block;width:100%;background:#082742;border-radius:14px;box-shadow:0 8px 32px #08274226}
+    .links{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0 30px}a{color:#104d81;text-underline-offset:3px}
+    .button{display:inline-block;padding:10px 18px;background:#fff;border:1px solid #bfcfdd;border-radius:8px;text-decoration:none;font-weight:650}
+    .primary{background:#c5111d;color:white;border-color:#c5111d}.chapters{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:10px;padding:0;list-style:none}
+    .chapters button{width:100%;display:flex;align-items:baseline;gap:12px;text-align:left;background:white;border:1px solid #cedae4;border-radius:9px;padding:13px;font:inherit;color:inherit;cursor:pointer}
+    .chapters button:hover{border-color:#164d77;background:#f7fafc}.chapters time{font-variant-numeric:tabular-nums;color:#b50e19;font-weight:700}
+    :focus-visible{outline:3px solid #126ad1;outline-offset:4px}.note{background:white;border-left:4px solid #c5111d;border-radius:8px;padding:16px 20px;margin-top:28px}
+    small{color:#526a7d}.error{color:#9a1620}h2{margin-top:32px}
+  </style>
+</head>
+<body><main>
+  <header><div class="brand">JUNIORPROG · МОДУС · СИГНАЛ</div><h1>От регистрации до первой награды</h1>
+    <p>Пошаговая видеоинструкция по обновлённому приложению: предложения всей команды, голосование, выполнение, ИИ-помощник и отчёт собственника. 10 минут 43 секунды · 14 глав · русская озвучка и субтитры.</p>
+  </header>
+  <video id="video" controls playsinline preload="metadata" poster="poster.jpg" aria-label="Видеоинструкция МОДУС СИГНАЛ">
+    <source src="modus-signal-guide.mp4" type="video/mp4">
+    <track kind="captions" src="captions.vtt" srclang="ru" label="Русский">
+    Ваш браузер не поддерживает видео. <a href="modus-signal-guide.mp4">Скачайте MP4</a>.
+  </video>
+  <div class="links">
+    <a class="button primary" href="../">Попробовать демо</a>
+    <a class="button" href="https://modus-signal.juniorcode-ekb.workers.dev/">Рабочий сайт</a>
+    <a class="button" href="modus-signal-guide.mp4" download>Скачать видео</a>
+    <a class="button" href="https://github.com/kirillzakup/modus-signal/blob/main/docs/tutorial/guide.md">Текстовая инструкция</a>
+  </div>
+  <h2>Перейти к нужному шагу</h2><p id="chapterStatus" role="status">Загружаем главы…</p><ol id="chapters" class="chapters"></ol>
+  <div class="note"><strong>Учебный пример.</strong> В видео используются вымышленные сотрудники и учебная награда. Telegram-вход смоделирован в изолированной копии. В рабочем приложении каждый входит в свой аккаунт, а смена участника в видео — монтажный переход. Настоящий DeepSeek показан на учебных данных.</div>
+  <p><small>Проект команды JuniorProg для хакатона Pavlodar Hub и ГК «Модус Трейд». <a href="https://github.com/kirillzakup/modus-signal">Исходный код на GitHub</a>.</small></p>
+</main>
+<script>
+  'use strict';
+  const player=document.getElementById('video'),list=document.getElementById('chapters'),status=document.getElementById('chapterStatus');
+  fetch('chapters.json').then(r=>{if(!r.ok)throw new Error('chapters');return r.json();}).then(chapters=>{
+    if(!Array.isArray(chapters)||!chapters.length)throw new Error('chapters');
+    chapters.forEach(chapter=>{
+      if(!Number.isFinite(chapter.start)||chapter.start<0||typeof chapter.title!=='string')throw new Error('chapter');
+      const item=document.createElement('li'),button=document.createElement('button'),time=document.createElement('time'),title=document.createElement('span');
+      time.textContent=Math.floor(chapter.start/60)+':'+String(Math.floor(chapter.start%60)).padStart(2,'0');title.textContent=chapter.title;
+      button.append(time,title);button.addEventListener('click',()=>{player.currentTime=chapter.start;player.play().catch(()=>{status.textContent='Нажмите кнопку воспроизведения на видео.';});player.scrollIntoView({behavior:'smooth',block:'center'});});
+      item.append(button);list.append(item);
+    });status.textContent='Выберите главу — видео начнётся с этого момента.';
+  }).catch(()=>{list.replaceChildren();status.textContent='Главы временно недоступны. Видео можно смотреть с помощью плеера выше.';});
+  player.addEventListener('error',()=>{status.className='error';status.textContent='Видео не удалось загрузить. Попробуйте скачать MP4 по ссылке выше.';});
+</script></body></html>
