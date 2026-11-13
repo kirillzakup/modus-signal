@@ -1,0 +1,22 @@
+{
+  "name": "MODUS SIGNAL — Node 24",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
+  "remoteUser": "node",
+  "containerEnv": {
+    "HOST": "0.0.0.0",
+    "PORT": "8080",
+    "DEMO": "1",
+    "BOT_POLLING": "0"
+  },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "МОДУС · СИГНАЛ — демо",
+      "onAutoForward": "openBrowser",
+      "protocol": "http"
+    }
+  },
+  "postCreateCommand": "npm ci",
+  "postStartCommand": "nohup npm start > /tmp/modus-signal.log 2>&1 &",
+  "waitFor": "postCreateCommand"
+}

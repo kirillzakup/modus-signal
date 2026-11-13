@@ -1,0 +1,29 @@
+{
+  "name": "modus-signal",
+  "version": "5.0.0",
+  "description": "МОДУС · СИГНАЛ — приём и решение обращений ГК «Модус Трейд»: вход по ссылке и QR-коду, фильтр собственника, доска (сервер + Telegram Mini App)",
+  "private": true,
+  "type": "commonjs",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/index.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch-path=server --watch-path=public server/index.js",
+    "test": "node --disable-warning=ExperimentalWarning --test tests/",
+    "build": "node scripts/build-standalone.js",
+    "cloudflare:login": "node scripts/cloudflare.cjs login --browser=false --scopes account:read user:read workers:write workers_scripts:write",
+    "dev:cloudflare": "node scripts/cloudflare.cjs dev --port 8787",
+    "build:cloudflare": "node scripts/cloudflare.cjs deploy --dry-run --outdir dist/worker",
+    "deploy:cloudflare": "node scripts/cloudflare.cjs deploy",
+    "test:cloudflare": "node --disable-warning=ExperimentalWarning --test tests/cloudflare-*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@pdf-lib/fontkit": "1.1.1",
+    "pdf-lib": "1.17.1"
+  },
+  "devDependencies": {
+    "wrangler": "4.161.0"
+  }
+}

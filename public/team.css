@@ -1,0 +1,26 @@
+.board{grid-template-columns:repeat(5,minmax(245px,1fr))!important;overflow-x:auto}
+.bcol[data-col=collect]{background:#eef3f9}.bcol[data-col=vote]{background:#f4f0fa}
+.bcol[data-col=collect] h4:before{background:#2f80ed}.bcol[data-col=vote] h4:before{background:#8456bb}
+.team-panel{margin-bottom:16px;border-left:4px solid #e00000}
+.team-stages{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}
+.team-stage{padding:7px 10px;background:#f0f3f7;border-radius:8px;font-size:12px;color:#597086}
+.team-stage.active{background:#082742;color:white;font-weight:700}
+.team-deadline{font-size:13px;color:#526981;background:#f0f4f8;border-radius:8px;padding:9px 12px}
+.team-option{padding:18px;border:1px solid #d8e2ec;border-radius:12px;margin:12px 0;background:white}
+.team-option.chosen{border:2px solid #39876a;background:#f4fbf7}
+.team-option p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}
+.team-proposal{margin-top:20px;padding-top:18px;border-top:1px solid #d8e2ec}
+.team-proposal textarea{min-height:110px}
+.team-confirmed{margin:15px 0;background:#ecf6f0;border-radius:10px;padding:14px;line-height:1.6}
+.team-participants{margin-top:18px;border-top:1px solid #e2e9f0;padding-top:12px}
+.team-participants summary{cursor:pointer;font-size:13px;font-weight:600}
+.team-people{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.team-person{font-size:12px;padding:6px 9px;border-radius:7px;background:#f0f3f7;color:#64798c}
+.team-person.answered{background:#e8f5ed;color:#23724c}
+.team-coin-rules{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}
+.team-coin-rules>div{padding:17px;background:#f3f6fa;border-radius:10px;display:grid;gap:8px}
+.team-coin-rules b{font-size:25px;color:#b7820e}.team-coin-rules span{font-size:13px}
+.team-task{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:17px 0;text-decoration:none;border-top:1px solid #e5ebf1;color:#082742}
+.team-card-action{color:#a72525;background:#fff0ee;border-radius:5px;padding:5px 8px;margin-top:12px;font-size:11px;font-weight:700}
+.team-card-progress{font-size:11px;color:#5b7188;margin-top:9px}
+@media(max-width:760px){.team-coin-rules{grid-template-columns:repeat(2,minmax(0,1fr))}.team-task{align-items:flex-start;flex-direction:column}.team-stages{gap:5px}.team-stage{font-size:10px;padding:6px}.team-option{padding:13px}.board{grid-template-columns:repeat(5,minmax(265px,80vw))!important}}

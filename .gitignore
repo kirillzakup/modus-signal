@@ -1,0 +1,27 @@
+node_modules/
+.wrangler/
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+data/
+config/owner-activation.html
+config/owner-activation.url
+config/cloudflare-secrets.json
+config/deepseek-key.txt
+dist/worker/
+*.log
+
+# Local data, credentials, builds and recordings
+artifacts/
+dist/
+config/telegram-launch.json
+scripts/tutorial-media/vendor/
+scripts/tutorial-media/.smoke/
+**/__pycache__/
+*.py[cod]
+.ruff_cache/
+
+config/wrangler.local.jsonc
+.wrangler.local.jsonc
