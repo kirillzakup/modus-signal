@@ -167,11 +167,11 @@ function createBot({ store, cfg, agent = null, log = console, fetchImpl = global
   async function cmdReport(chatId, from) {
     const u = me(from);
     if (!u) return send(chatId, 'Сначала войдите: /start');
-    if (!core.isAdmin(u)) return send(chatId, 'Отчёт агента доступен собственнику и администратору.');
+    if (u.role !== 'owner') return send(chatId, 'Отчёт доступен собственнику.');
     if (!agent) return send(chatId, 'Агент не настроен на сервере.');
     let r = agent.todaysReport();
     if (!r) { await send(chatId, 'Готовлю отчёт…'); r = await agent.generateReport(u.id); }
-    const head = `📋 <b>Отчёт ${esc(r.id)}</b> · пульс ${esc(r.health.score)}/100 — ${esc(r.health.label)}` + (r.source === 'ai' ? ` · ИИ (${esc(r.model)})` : ' · по правилам');
+    const head = `📋 <b>Отчёт ${esc(r.id)}</b> · ${r.health ? 'пульс ' : ''}${esc(r.health ? r.health.score : r.summary.solved)}${r.health ? '/100 — '+esc(r.health.label) : ' решено'}` + (r.source === 'ai' ? ` · ИИ (${esc(r.model)})` : ' · факты из приложения');
     await send(chatId, head);
     return sendLong(chatId, r.text + pendingRewardsText(), ownerButton());
   }
@@ -194,7 +194,7 @@ function createBot({ store, cfg, agent = null, log = console, fetchImpl = global
     const owners = store.state.users.filter((x) => x.role === 'owner' && x.tgId);
     for (const o of owners) {
       try {
-        await send(o.tgId, `📋 <b>Ежедневный отчёт агента</b> · пульс ${esc(r.health.score)}/100 — ${esc(r.health.label)}`);
+        await send(o.tgId, `📋 <b>Ежедневный отчёт агента</b> · ${r.health ? 'пульс ' : ''}${esc(r.health ? r.health.score : r.summary.solved)}${r.health ? '/100 — '+esc(r.health.label) : ' решено'}`);
         await sendLong(o.tgId, r.text + pendingRewardsText(), ownerButton());
       } catch (e) { log.warn('[bot] отчёт собственнику не доставлен:', e.message); }
     }

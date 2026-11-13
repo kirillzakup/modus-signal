@@ -371,10 +371,10 @@ describe('v2: ежедневный отчёт по расписанию', () => 
   it('не раньше REPORT_HOUR и ровно один отчёт за сутки; собственник получает уведомление', async () => {
     const ctx = await boot({ reportHour: 9 });
     try {
-      const at = (d, h, m = 0) => new Date(2030, 0, d, h, m).getTime();
+      const at = (d, h, m = 0) => Date.UTC(2030, 0, d, h - 5, m);
       assert.equal(await ctx.app.runDaily(at(10, 8, 59)), null, 'до 9:00 не создаётся');
       const r1 = await ctx.app.runDaily(at(10, 9, 0));
-      assert.ok(r1 && r1.source === 'rules');
+      assert.ok(r1 && r1.source === 'facts');
       assert.equal(await ctx.app.runDaily(at(10, 9, 1)), null);
       assert.equal(await ctx.app.runDaily(at(10, 23, 59)), null);
       // параллельные вызовы не создают дублей
@@ -438,8 +438,8 @@ describe('v2: Telegram-бот собственника', () => {
 
       await bot.handleUpdate(msg('/report'));
       const texts = sent().filter((m) => m.chat_id === 9001).map((m) => m.text).join('\n');
-      assert.match(texts, /Отчёт R\d+/);
-      assert.match(texts, /Пульс: \d+\/100/);
+      assert.match(texts, /Отчёт (?:R\d+|daily-\d{4}-\d{2}-\d{2})/);
+      assert.match(texts, /Подтверждено решений: \d+/);
       assert.match(texts, /Ждут подтверждения заявки на награды \(2\)/);
       assert.equal(sent().at(-1).reply_markup.inline_keyboard[0][0].web_app.url, 'https://signal.example.ru/#/owner');
       assert.ok(sent().every((m) => m.text.length <= 4096));

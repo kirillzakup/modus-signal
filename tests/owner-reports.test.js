@@ -122,6 +122,7 @@ test('Russian PDF is a readable multipage document with embedded Unicode font', 
   assert.equal(pdf.getTitle(), 'МОДУС · СИГНАЛ — отчёт за 2026-11-12');
   assert.ok(bytes.length > 15000);
   const target = path.join(root, 'artifacts', 'owner-report-work', 'owner-report-sample.pdf');
+  fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, bytes);
 });
 

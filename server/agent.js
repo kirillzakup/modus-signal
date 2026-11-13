@@ -2,15 +2,17 @@
 /**
  * ИИ-агент собственника: данные системы → core.ownerDigest → core.agentPrompt → LLM.
  * Без LLM (или при ошибке LLM) — отчёт по правилам (core.digestText).
- * Плюс ежедневный отчёт по расписанию (REPORT_HOUR, локальное время сервера по TZ).
+ * Ежедневный отчёт за предыдущий день: REPORT_HOUR, Asia/Tashkent.
  */
 const core = require('../public/core.js');
+const { buildOwnerReport, periodFor } = require('./owner-reports');
+const { enrichOwnerReport } = require('./owner-report-ai');
 
 const NO_LLM_NOTE = 'ИИ не подключён: задайте LLM_API_KEY — сейчас показан отчёт по правилам';
 
 function localDay(t) {
-  const d = new Date(t);
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const value = typeof t === 'number' ? t : Date.parse(t);
+  return new Date(value + 5 * 3600000).toISOString().slice(0, 10);
 }
 
 /** Уведомление в формате ядра (seq 'notif', префикс 'n'). */
@@ -19,7 +21,7 @@ function pushNotification(state, userId, text, at) {
   state.notifications.push({ id: 'n' + state.seq.notif, userId, ticketId: null, text, at, read: false, delivered: false });
 }
 
-function createAgent({ store, llm, log = console, reportHour = 9 }) {
+function createAgent({ store, llm, log = console, reportHour = 9, env = process.env, fetchImpl = globalThis.fetch }) {
   let dailyRunning = false;
   const listeners = { daily: null };
 
@@ -27,7 +29,15 @@ function createAgent({ store, llm, log = console, reportHour = 9 }) {
   async function generateReport(actorId, now = Date.now()) {
     if (actorId) {
       const u = store.state.users.find((x) => x.id === actorId);
-      if (!core.isAdmin(u)) { const e = new Error('Отчёты доступны собственнику'); e.status = 403; e.code = 'forbidden'; throw e; }
+      if (!u || u.role !== 'owner' || u.disabled === true || u.active === false) { const e = new Error('Отчёты доступны собственнику'); e.status = 403; e.code = 'forbidden'; throw e; }
+    }
+    if (!llm.configured || env.DEEPSEEK_API_KEY) {
+      const report = await enrichOwnerReport(buildOwnerReport(store.state, { now }), { env, fetchImpl });
+      if (actorId && !store.state.users.some(u => u.id === actorId && u.role === 'owner' && u.disabled !== true && u.active !== false)) {
+        const e = new Error('Доступ изменён'); e.status = 403; e.code = 'forbidden'; throw e;
+      }
+      store.state.reports = (store.state.reports || []).filter(r => r.id !== report.id).slice(-119);
+      store.state.reports.push(report); store.save(); return report;
     }
     const digest = core.ownerDigest(store.state, now);
     let rep, error = null;
@@ -66,24 +76,25 @@ function createAgent({ store, llm, log = console, reportHour = 9 }) {
   function todaysReport(now = Date.now()) {
     const day = localDay(now);
     const list = store.state.reports || [];
+    if (!llm.configured || env.DEEPSEEK_API_KEY) return list.find(r => r.id === 'daily-' + periodFor(now).day) || null;
     for (let i = list.length - 1; i >= 0; i--) if (localDay(list[i].at) === day) return list[i];
     return null;
   }
 
   /**
-   * Проверка расписания (вызывается раз в минуту). Создаёт не более одного отчёта за локальные сутки,
+   * Проверка расписания (вызывается раз в минуту). Создаёт не более одного отчёта за сутки Asia/Tashkent,
    * не раньше REPORT_HOUR. Возвращает созданный отчёт или null.
    */
   async function runDaily(now = Date.now()) {
     if (dailyRunning) return null;
-    if (new Date(now).getHours() < reportHour) return null;
+    if (new Date(now + 5 * 3600000).getUTCHours() < reportHour) return null;
     if (todaysReport(now)) return null;
     dailyRunning = true;
     try {
       const r = await generateReport(null, now);
       const state = store.state;
       state.users.filter((u) => u.role === 'owner').forEach((o) =>
-        pushNotification(state, o.id, '📋 Ежедневный отчёт агента готов: пульс ' + r.health.score + '/100 — ' + r.health.label, r.at));
+        pushNotification(state, o.id, '📋 Ежедневный отчёт агента готов. Решённые вопросы и участие команды — в кабинете собственника.', r.at));
       store.save();
       log.info(`[agent] ежедневный отчёт ${r.id} (${r.source})`);
       if (listeners.daily) Promise.resolve().then(() => listeners.daily(r)).catch((e) => log.warn('[agent] доставка отчёта:', e.message));
