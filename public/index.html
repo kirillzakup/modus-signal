@@ -706,7 +706,7 @@ function navIcon(href){
 
 /* ═════════════ Каркас ═════════════ */
 function navItemsOld(){
-  var items=[['#/','⌂','Главная']];
+  var items=[['#/','⌂','Главная'],['#/assistant','✦','ИИ-помощник']];
   if(isOwnerish()) items.push(['#/owner','♛',App.me.role==='admin'?'Заявки на награды':'Кабинет собственника']);
   items.push(['#/new','＋','Сообщить о проблеме'],['#/problems','☰','Проблемы и решения'],['#/tasks','✓','Мои задачи','tasks'],['#/chat','✉','Общий чат']);
   if(isStaff()) items.push(['#/inbox','◎','Мои входящие','inbox'],['#/board','▦','Канбан'],['#/analytics','▤','Аналитика']);
@@ -734,9 +734,9 @@ function shell(){
   return '<div class="app">'+
     '<aside class="side">'+brand()+'<div class="nav-label">Рабочее пространство</div><nav class="nav" aria-label="Основное меню">'+nav+'</nav><div class="side-mission"><span class="mission-mark">→</span><b>От сигнала<br>к решению.</b><p>Замечаем проблемы.<br>Меняем компанию вместе.</p><a href="#/new">Подать обращение ↗</a></div><div class="foot">ГК «Модус Трейд»<br><span class="connection-status">'+(App.api.mode==='server'?'Сервер подключён':'Автономный демо-режим')+'</span></div></aside>'+
     '<div class="main">'+
-      '<div class="mtop">'+brand()+'<div class="sp"></div>'+(!isDemoMode()?'<a class="mobile-identity" href="#/profile">'+esc(App.me.name)+'</a>':App.tgInit?'':'<select data-change="switchUser" class="sel" style="max-width:150px;background:rgba(255,255,255,.12);color:#fff;border-color:transparent">'+opts+'</select>')+'<button class="iconbtn" data-act="bell">🔔'+(App.unread?'<span class="dot">'+App.unread+'</span>':'')+'</button></div>'+
+      '<div class="mtop">'+brand()+'<div class="sp"></div>'+(!isDemoMode()?'<a class="mobile-identity" href="#/profile">'+esc(App.me.name)+'</a>':App.tgInit?'':'<select data-change="switchUser" class="sel" style="max-width:150px;background:rgba(255,255,255,.12);color:#fff;border-color:transparent">'+opts+'</select>')+'<a class="iconbtn" href="#/assistant" aria-label="ИИ-помощник" title="ИИ-помощник">✦</a><button class="iconbtn" data-act="bell">🔔'+(App.unread?'<span class="dot">'+App.unread+'</span>':'')+'</button></div>'+
       '<div class="top">'+(App.boot.triage?'<div class="workspace-breadcrumb">Модус Трейд <span>/</span> Сигнал</div>':'<div class="search"><span class="ic">⌕</span><input id="gsearch" placeholder="Поиск по номеру, тексту, решению…" value="'+esc(App.ui.filters.q||'')+'"></div>')+'<div class="sp"></div>'+(isDemoMode()&&!App.tgInit?'<span class="demo-indicator">Демо</span>':'')+switcher+
-      '<button class="iconbtn" data-act="bell" title="Уведомления">🔔'+(App.unread?'<span class="dot">'+App.unread+'</span>':'')+'</button><a class="btn red" href="#/new">'+(App.boot.triage?'＋ Сообщить':'＋ Сигнал')+'</a></div>'+
+      '<a class="btn line" href="#/assistant">✦ ИИ-помощник</a><button class="iconbtn" data-act="bell" title="Уведомления">🔔'+(App.unread?'<span class="dot">'+App.unread+'</span>':'')+'</button><a class="btn red" href="#/new">'+(App.boot.triage?'＋ Сообщить':'＋ Сигнал')+'</a></div>'+
       '<div class="view" id="view"><div class="empty">Загрузка…</div></div>'+
     '</div></div><nav class="bnav" style="grid-template-columns:repeat('+bn.length+',1fr)">'+bnav+'</nav>';
 }
@@ -1663,7 +1663,7 @@ function navItems(){
   if(!App.boot.triage)return navItemsOld();
   var it=[['#/',navIcon('#/'),'Доска'],['#/tasks',navIcon('#/tasks'),'Мои задачи','tasks']];
   if(App.boot.canTriage)it.push(['#/inbox',navIcon('#/inbox'),'Входящие','inbox']);
-  it.push(['#/more',navIcon('#/more'),'Ещё']);
+  it.push(['#/assistant','✦','ИИ-помощник'],['#/more',navIcon('#/more'),'Ещё']);
   return it;
 }
 function bottomNav(){
@@ -2046,6 +2046,7 @@ function render(){
   if(p==='/'||p==='') job=App.boot.triage?viewBoard():viewHomeSimple();
   else if(p==='/home') job=viewHomeSimple();
   else if(p==='/more') job=viewMore();
+  else if(p==='/assistant') job=Promise.resolve(viewAssistant());
   else if(p==='/assigned') job=viewInboxOld();
   else if(p==='/owner') job=viewOwner();
   else if(p==='/problems') job=viewProblems(Object.keys(r.q).length?r.q:null);
@@ -2228,6 +2229,12 @@ function linkScreen(){
   var demo=[['u1','Сотрудник закупок'],['u4','Менеджер по продажам'],['m1','Руководитель закупок'],['m2','Руководитель направления'],['a1','Администратор системы']];
   $('#lk').innerHTML=demo.map(function(d){return '<button class="btn line" style="width:100%;margin-bottom:8px;justify-content:flex-start" data-act="tgLink" data-v="'+d[0]+'">'+esc(d[1])+'</button>';}).join('');
   acts.tgLink=function(el){App.api.linkTg(el.dataset.v).then(function(){start(true);}).catch(fail);};
+}
+
+function viewAssistant(){
+  var a=App.ui.personalAi;
+  if(!a||a.ownerId!==App.me.id||a.ticketId){a={ticketId:null,history:[],ownerId:App.me.id};App.ui.personalAi=a;}
+  return '<div class="pagehead"><div><div class="eyebrow">Личная помощь</div><h1>ИИ-помощник</h1><p>Разберём проблему, сравним варианты и составим понятный план.</p></div></div><section class="card" style="max-width:900px"><p class="muted">Можно спросить: «Как сократить задержки согласования?» или «Помоги сформулировать моё предложение команде».</p><div id="personalLog" class="asklog" aria-live="polite">'+a.history.map(function(m){return '<div class="ab '+(m.role==='user'?'me':'ai')+'" style="white-space:pre-wrap">'+esc(m.content)+'</div>';}).join('')+'</div><label class="f" for="personalQuestion" style="margin-top:16px">Ваш вопрос</label><textarea class="inp" id="personalQuestion" maxlength="3000" rows="4" placeholder="Опишите задачу и что уже пробовали"></textarea><button class="btn red" data-act="personalAsk" style="margin-top:12px">Спросить помощника</button><p class="help">'+(isDemoMode()?'Это демо: здесь показан учебный ответ. На рабочем сайте отвечает DeepSeek.':'Отвечает DeepSeek. Ваш вопрос отправляется ИИ; решения и действия в приложении остаются за вами.')+'</p></section>';
 }
 
 // Team actions and personal assistant share the current authenticated session.
